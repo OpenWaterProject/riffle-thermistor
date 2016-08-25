@@ -19,7 +19,7 @@ Here, we're using the same thermistor that is used in the Adafruit tutorial link
 
 These numbers will show up in our Riffle temperature analysis code.
 
-## The Thermistor Measurement Circuit: A Simple Voltage Divider
+## Thermistor Measurement Circuit: A Voltage Divider
 
 The Riffle, and similar microcontrollers like the Arduino, are only capable of measuring voltages, not resistances. The simplest way to measure the resistance of a thermistor with a microcontroller is to set up a [voltage divider](https://en.wikipedia.org/wiki/Voltage_divider).
 
