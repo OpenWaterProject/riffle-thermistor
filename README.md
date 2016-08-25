@@ -35,9 +35,18 @@ By measuring **Vout** and using Ohm's Law (see the derivation in the [Wikipedia 
 
 For the thermistor, we again construct a simple voltage divider circuit.  In this case, we're using a known resistor, **R1** = 10K, and our unknown resistor is the thermistor, **T1**.  For us, **V_in** is 3.3 Volts, and we'll connect **Vout** to an analog input pin on the Riffle, **A0**:
 
- 
+
 <img src="pics/thermistor_schem_6.png">
 
+## Thermistor Measurement Circuit on a Protoboard
+
+Here, we set
+
+## Code for Thermistor Datalogging with a Riffle
+
+The Arduino code [riffle_thermistor.ino] in this repository will measure temperature using analog pin A0 on the Riffle, and record it to a microSD card along with a timestamp. 
+
+The data is output in "TSV" format, with tabs separating columns of data (timestamp in the first column, RTC temperature in the second column, thermistor temperature in the third column).
 
 
 
