@@ -27,12 +27,12 @@ The Riffle, and similar microcontrollers like the Arduino, are only capable of m
 
 A voltage divider allows us to measure an unknown resistor **Z2** if we know a resistor **Z1** by applying a known voltage **V1** into the circuit if we arrange them all as follows:
 
-<img src="impedance.png">
+<img src="pics/divider.png">
 
 Using Ohm's Law (see the derivation in the [Wikipedia article](https://en.wikipedia.org/wiki/Voltage_divider), we can calcuate the unknown resistor **R2** as:
 
 
-<img src="r2.png">
+<img src="pics/r2.png">
 
 In the case of our thermistor circuit, we're using a known resistor, **R1** = 10K, and our unknown resistor is the thermistor, **T1**.  For us, **V_in** is 3.3 Volts, and we'll connect **Vout** to an analog input pin on the Riffle, **A0**:
 
