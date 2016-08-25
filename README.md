@@ -42,6 +42,8 @@ For the thermistor, we again construct a simple voltage divider circuit.  In thi
 
 Here, we set
 
+<img src="pics/thermistor_proto.png">
+
 ## Code for Thermistor Datalogging with a Riffle
 
 The Arduino code [riffle_thermistor.ino] in this repository will measure temperature using analog pin A0 on the Riffle, and record it to a microSD card along with a timestamp. 
