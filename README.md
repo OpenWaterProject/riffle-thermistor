@@ -21,15 +21,24 @@ Here, we're using the same thermistor that is used in the Adafruit tutorial link
 
 These numbers will show up in our Riffle temperature analysis code.
 
-# The Thermistor Circuit
+# The Thermistor Measurement Circuit: A Simple Voltage Divider
 
-The Riffle, and similar microcontrollers like the Arduino, are only capable of measuring voltages, not resistances. The simplest way to measure the resistance of a thermistor with a microcontroller is to set up a [voltage divider](https://en.wikipedia.org/wiki/Voltage_divider) circuit with the thermistor, **T1** and another resistor connected in series, which generates a voltage signal that is proportional to the ratio of the resistance of the thermistor and the resistor, **R1**.
+The Riffle, and similar microcontrollers like the Arduino, are only capable of measuring voltages, not resistances. The simplest way to measure the resistance of a thermistor with a microcontroller is to set up a [voltage divider](https://en.wikipedia.org/wiki/Voltage_divider).
 
-This is what we are depicting in the below circuit diagram:
+A voltage divider allows us to measure an unknown resistor **Z2** if we know a resistor **Z1** by applying a known voltage **V1** into the circuit if we arrange them all as follows:
 
+<img src="impedance.png">
+
+Using Ohm's Law (see the derivation in the [Wikipedia article](https://en.wikipedia.org/wiki/Voltage_divider), we can calcuate the unknown resistor **R2** as:
+
+
+<img src="r2.png">
+
+In the case of our thermistor circuit, we're using a known resistor, **R1** = 10K, and our unknown resistor is the thermistor, **T1**.  For us, **V_in** is 3.3 Volts, and we'll connect **Vout** to an analog input pin on the Riffle, **A0**:
+
+ 
 <img src="pics/thermistor_schem_6.png">
 
-#  
 
 
 
