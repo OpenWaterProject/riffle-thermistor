@@ -1,14 +1,12 @@
-# riffle-thermistor
+# Measuring temperature using a thermistor and a Riffle
 
-How-to for connecting a thermistor -- a type of temperature probe -- to a Riffle.
-
-# Thermistor basics
+## Thermistor basics
 
 A [thermistor](https://en.wikipedia.org/wiki/Thermistor) provides a simple, precise way of measuring temperature.  The resistance of a thermistor is dependent on temperature in a particular way -- if we know this relationship, then we can measure temperature by measuring the resistance of the thermistor (something we can do with a simple electronic circuit.)
 
 Adafruit has a [great tutorial](https://learn.adafruit.com/thermistor/overview) on thermistors, and measuring them with an Arduino.  The Riffle works very similarly to an Arduino, so their tutorial is a good resource for the Riffle circuitry as well. 
 
-# Choosing a thermistor
+## Choosing a thermistor
 
 There are several types of thermistors, and the relationship between resistance and temperature differs depending on the type.  It's important to know what type of thermistor you're using in order that your circuit and code are appropriate. 
 
@@ -21,7 +19,7 @@ Here, we're using the same thermistor that is used in the Adafruit tutorial link
 
 These numbers will show up in our Riffle temperature analysis code.
 
-# The Thermistor Measurement Circuit: A Simple Voltage Divider
+## The Thermistor Measurement Circuit: A Simple Voltage Divider
 
 The Riffle, and similar microcontrollers like the Arduino, are only capable of measuring voltages, not resistances. The simplest way to measure the resistance of a thermistor with a microcontroller is to set up a [voltage divider](https://en.wikipedia.org/wiki/Voltage_divider).
 
