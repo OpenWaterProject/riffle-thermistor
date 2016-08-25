@@ -12,10 +12,10 @@ There are several types of thermistors, and the relationship between resistance 
 
 The particular type of thermistor we'll be covering below is an "NTC" or "Negative Temperature Coefficient" thermistor -- which means that the resistance decreases as the temeprature increases.  Typically, for NTC thermistors, the important parameters to know are **B** -- the "B coefficient" of the thermistor -- and **R_o**, the resistance of the thermistor at room temperature (defined as 25 C).  
 
-Here, we're using the same thermistor that is used in the Adafruit tutorial linked to above:
+Here, we're using the same thermistor that is used in the Adafruit tutorial linked to above, which has the following properties: 
 
-- **R_o** = 10K
-- **B** = 3950
+- **R_o** -- the resistance of the thermistor at 25 C -- is 10K
+- **B** -- the "B parameter" -- is 3950
 
 These numbers will show up in our Riffle temperature analysis code.
 
@@ -23,14 +23,13 @@ These numbers will show up in our Riffle temperature analysis code.
 
 The Riffle, and similar microcontrollers like the Arduino, are only capable of measuring voltages, not resistances. The simplest way to measure the resistance of a thermistor with a microcontroller is to set up a [voltage divider](https://en.wikipedia.org/wiki/Voltage_divider).
 
-A voltage divider allows us to measure an unknown resistor **Z2** if we know a resistor **Z1** by applying a known voltage **V1** into the circuit if we arrange them all as follows:
+A voltage divider allows us to measure an unknown resistor **R2** if we know a resistor **R1** by applying a known voltage **Vin** into the circuit if we arrange them all as follows:
 
 <img src="pics/divider.png">
 
-Using Ohm's Law (see the derivation in the [Wikipedia article](https://en.wikipedia.org/wiki/Voltage_divider), we can calcuate the unknown resistor **R2** as:
+By measuring **Vout** and using Ohm's Law (see the derivation in the [Wikipedia article](https://en.wikipedia.org/wiki/Voltage_divider), we can calcuate the unknown resistor **R2** as:
 
-
-<img src="pics/r2.png">
+<img src="pics/result.png">
 
 In the case of our thermistor circuit, we're using a known resistor, **R1** = 10K, and our unknown resistor is the thermistor, **T1**.  For us, **V_in** is 3.3 Volts, and we'll connect **Vout** to an analog input pin on the Riffle, **A0**:
 
