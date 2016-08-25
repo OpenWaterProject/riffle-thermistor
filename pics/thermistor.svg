@@ -306,5 +306,16 @@
          id="tspan3131-3-2-31"
          x="379.39685"
          y="201.70781">Thermistor</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:15.75092602px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="259.53815"
+       y="365.96353"
+       id="text3153"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3155"
+         x="259.53815"
+         y="365.96353">T1</tspan></text>
   </g>
 </svg>

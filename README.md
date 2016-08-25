@@ -23,11 +23,11 @@ These numbers will show up in our Riffle temperature analysis code.
 
 # The Thermistor Circuit
 
-The Riffle, and similar microcontrollers like the Arduino, are only capable of measuring voltages, not resistances. The simplest way to measure the resistance of a thermistor with a microcontroller is to set up a [voltage divider](https://en.wikipedia.org/wiki/Voltage_divider) circuit with the thermistor, **T_1** and another resistor connected in series, which generates a voltage signal that is proportional to the ratio of the resistance of the thermistor and the resistor, **R_1**.
+The Riffle, and similar microcontrollers like the Arduino, are only capable of measuring voltages, not resistances. The simplest way to measure the resistance of a thermistor with a microcontroller is to set up a [voltage divider](https://en.wikipedia.org/wiki/Voltage_divider) circuit with the thermistor, **T1** and another resistor connected in series, which generates a voltage signal that is proportional to the ratio of the resistance of the thermistor and the resistor, **R1**.
 
 This is what we are depicting in the below circuit diagram:
 
-<img src="pics/thermistor_schem_5.png">
+<img src="pics/thermistor_schem_6.png">
 
 #  
 
