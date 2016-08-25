@@ -38,9 +38,9 @@ For the thermistor, we again construct a simple voltage divider circuit.  In thi
 
 <img src="pics/thermistor_schem_6.png">
 
-## Thermistor Measurement Circuit on a Protoboard
+## Thermistor Measurement Circuit on a Riffle Protoboard
 
-Here, we set
+Below is a picture of a simple voltage divider setup on the Riffle Protoboard which matches the schematic shown above.  Note that there is no 'polarity' to the thermistor, so either wire works in either position.  Also note that the 'columns' of pins on the Riffle Protoboard, as shown, are connected electrically by small traces -- this is what allows us to connect e.g. the red power line to one end of the resistor R1 by simply having the wires located in the same column.  
 
 <img src="pics/thermistor_proto.png">
 
