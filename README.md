@@ -42,7 +42,7 @@ For the thermistor, we again construct a simple voltage divider circuit.  In thi
 
 The Riffle protoboard connects to the end of the Riffle, making it easier to connect sensor wires to the Riffle in a secure fashion:
 
-<img src = "pics/proto.png">
+<img src = "pics/proto.png" align = center >
 
 Below is a picture of a simple voltage divider setup on the Riffle Protoboard which matches the schematic shown above.  Note that there is no 'polarity' to the thermistor, so either wire works in either position.  Also note that the 'columns' of pins on the Riffle Protoboard, as shown, are connected electrically by small traces -- this is what allows us to connect e.g. the red power line to one end of the resistor R1 by simply having the wires located in the same column.  
 
