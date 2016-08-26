@@ -1,5 +1,7 @@
 # Measuring temperature using a thermistor and a Riffle
 
+<img src="pics/thermistor_single.png" width=300>
+
 ## Thermistor basics
 
 A [thermistor](https://en.wikipedia.org/wiki/Thermistor) provides a simple, precise way of measuring temperature.  The resistance of a thermistor is dependent on temperature in a particular way -- if we know this relationship, then we can measure temperature by measuring the resistance of the thermistor (something we can do with a simple electronic circuit.)
