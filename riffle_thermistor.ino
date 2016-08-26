@@ -1,160 +1,264 @@
-#include <SPI.h>
-#include <SD.h>
 #include <Wire.h>
+#include <SPI.h>
+#include "SdFat.h"    //  https://github.com/greiman/SdFat
+#include "EnableInterrupt.h"  //  https://github.com/GreyGnome/EnableInterrupt
+#include "DS3231.h"   //  https://github.com/kinasmith/DS3231
+#include "LowPower.h"   //  https://github.com/rocketscream/Low-Power
+#include <OneWire.h>
+#include <DallasTemperature.h>
 
+DS3231 rtc; //initialize the Real Time Clock
 
-#define debug 1 // 0: don't print anything out; 1: print out debugging statements
+// SdFat variables
+SdFat sd;
+SdFile myFile;
 
-const int num_samples=1000;
+const int DEBUG = 1; //Enable or disable Serial Printing with this line. 1 is enabled, 0 is disabled.  If enabled, the RTC time will also be set.
 
-// logger
+const int led = 9; //Feedback LED
+const int bat_v_pin = A3;
+const int bat_v_enable = 4; //enable pin for bat. voltage read
+const int rtc_int = 5; //rtc interrupt pin
+const int sd_pwr_enable = 6; //enable pin for SD power
+const int hdr_pwr_enable = 8; //enable pin for header power
+const int chipSelect = 7; //SPI Chip Select for SD Card
 
-// Set the pins used
-#define cardSelect 4
+// which analog pin to connect
+#define THERMISTORPIN A0         
+// resistance at 25 degrees C
+#define THERMISTORNOMINAL 10000      
+// temp. for nominal resistance (almost always 25 C)
+#define TEMPERATURENOMINAL 25   
+// how many samples to take and average, more takes longer
+// but is more 'smooth'
+#define NUMSAMPLES 5
+// The beta coefficient of the thermistor (usually 3000-4000)
+#define BCOEFFICIENT 3950
+// the value of the 'other' resistor
+#define SERIESRESISTOR 10000    
 
-File logfile;
+int samples[NUMSAMPLES];
 
-// blink out an error code
-void error(uint8_t errno) {
-  while(1) {
-    uint8_t i;
-    for (i=0; i<errno; i++) {
-      digitalWrite(13, HIGH);
-      delay(100);
-      digitalWrite(13, LOW);
-      delay(100);
-    }
-    for (i=errno; i<10; i++) {
-      delay(200);
-    }
-  }
-}
-
-// This line is not needed if you have Adafruit SAMD board package 1.6.2+
-//   #define Serial SerialUSB
+int interval_sec = 15; //Logging interval in seconds
+float bat_v;
+float temp;
+float one_temp;
 
 void setup() {
-  // connect at 115200 so we can read the GPS fast enough and echo without dropping chars
-  // also spit it out
-  Serial.begin(115200);
-  
-  if (debug) Serial.println("\r\nAnalog logger test");
-  pinMode(13, OUTPUT);
 
 
-  // see if the card is present and can be initialized:
-  if (!SD.begin(cardSelect)) {
-  if (debug)  Serial.println("Card init. failed!");
-    error(2);
-  }
-  char filename[15];
-  strcpy(filename, "ANALOG00.TXT");
-  for (uint8_t i = 0; i < 100; i++) {
-    filename[6] = '0' + i/10;
-    filename[7] = '0' + i%10;
-    // create if does not exist, do not open existing, write, sync after write
-    if (! SD.exists(filename)) {
-      break;
-    }
-  }
+  if (DEBUG) Serial.begin(9600); // only set up Serial if in DEBUG mode
 
-  logfile = SD.open(filename, FILE_WRITE);
-  if( ! logfile ) {
-   if(debug) Serial.print("Couldnt create "); 
-   if (debug) Serial.println(filename);
-    error(3);
-  }
-  if (debug) {
-    //Serial.print("Writing to "); 
-  
-  Serial.println(filename);
-  }
+  // enable any I2C devices
+  Wire.begin();
 
-  pinMode(13, OUTPUT);
-  pinMode(8, OUTPUT);
- if (debug)  Serial.println("Ready!");
+  // start the RTC
+  rtc.begin();
+
+  // prepare the RTC hardware for the interrupt functionality
+  pinMode(rtc_int, INPUT_PULLUP); 
+
+  // if in DEBUG mode, adjust the RTC time using the system clock
+  if (DEBUG) rtc.adjust(DateTime((__DATE__), (__TIME__)));
+
+  // set the led blinking pin to OUTPUT mode
+  pinMode(led, OUTPUT);
+
+  // enable the SD card for writing
+  pinMode(chipSelect, OUTPUT);
+
+  // turn off the battery monitor circuitry for now, to save power
+  pinMode(bat_v_enable, OUTPUT);
+  digitalWrite(bat_v_enable, HIGH); //Turn off Battery Reading
+
+  // put the SD card powering pin in the proper mode
+  pinMode(sd_pwr_enable, OUTPUT);
+  digitalWrite(sd_pwr_enable, HIGH); //Turn off Battery Reading
+
+  // put the external sensors switch in the right mode
+  pinMode(hdr_pwr_enable, OUTPUT);
+  digitalWrite(hdr_pwr_enable, HIGH); //Turn off external sensors
 
 
-  
+  // Start up the library
+  sensors.begin();
 }
 
-uint8_t i=0;
 void loop() {
 
-analogReadResolution(12);
+
+  // get the current time from the RTC
+  DateTime now = rtc.now();
+
+  // set up the next wake time 
+  DateTime nextAlarm = DateTime(now.unixtime() + interval_sec);
+
+  // print out, if in DEBUG mode
+  if (DEBUG) {
+    Serial.print("Now: ");
+    Serial.print(now.unixtime());
+    Serial.print(" Alarm Set for: ");
+    Serial.println(nextAlarm.unixtime());
+    Serial.flush();
+  }
+
+  // get the battery voltage  
+  bat_v = getBat_v(bat_v_pin, bat_v_enable); //takes 20ms
+
+   // print out, if in DEBUG mode
+  if (DEBUG) {
+    Serial.print("Battery Voltage is: ");
+    Serial.print(bat_v);
+    Serial.println(" Volts.");
+    Serial.flush();
+  }
+
+  // get the RTC temp sensor value 
+  rtc.convertTemperature(); //prep temp registers from RTC
+  temp = rtc.getTemperature(); //Read that value
 
 
-// write all the values
+  // turn on external sensors
+  digitalWrite(hdr_pwr_enable, LOW); //Turn power external header
 
+  // make the thermistor measurement
 
-float temp = 22.0;
-
-int a = analogRead(0);
-
-        String dataString = "";
+  uint8_t i;
+  float average;
+ 
+  // take N samples in a row, with a slight delay
+  for (i=0; i< NUMSAMPLES; i++) {
+   samples[i] = analogRead(THERMISTORPIN);
+   delay(10);
+  }
+ 
+  // average all the samples out
+  average = 0;
+  for (i=0; i< NUMSAMPLES; i++) {
+     average += samples[i];
+  }
+  average /= NUMSAMPLES;
+ 
+  if (DEBUG) Serial.print("Average analog reading "); 
+  if (DEBUG) Serial.println(average);
+ 
+  // convert the value to resistance
+  average = 1023 / average - 1;
+  average = SERIESRESISTOR / average;
+  if (DEBUG) Serial.print("Thermistor resistance "); 
+  if (DEBUG) Serial.println(average);
+ 
+  float steinhart;
+  steinhart = average / THERMISTORNOMINAL;     // (R/Ro)
+  steinhart = log(steinhart);                  // ln(R/Ro)
+  steinhart /= BCOEFFICIENT;                   // 1/B * ln(R/Ro)
+  steinhart += 1.0 / (TEMPERATURENOMINAL + 273.15); // + (1/To)
+  steinhart = 1.0 / steinhart;                 // Invert
+  steinhart -= 273.15;                         // convert to C
+ 
+  if (DEBUG) Serial.print("Temperature "); 
+  if (DEBUG) Serial.print(steinhart);
+  if (DEBUG) Serial.println(" *C");
   
-    dataString += millis();
-     dataString += " ";
-    dataString += analogRead(0);
-   // dataString += " ";
-   // dataString += analogRead(3);
-  
-    
-      logfile.println(dataString);
+  // turn off external sensors
+  digitalWrite(hdr_pwr_enable, HIGH); //Turn power external header
 
 
-    if(debug) Serial.println(dataString);
+  // print out, if in DEBUG mode
+  if (DEBUG) {
+    Serial.print("RTC Temp is: ");
+    Serial.print(temp);
+    Serial.println(" C.");
+    Serial.flush();
+  }
 
-      
-      
-      logfile.flush();
+  // write to SD card 
+  writeToSd(now.unixtime(), steinhart, bat_v);
 
- digitalWrite(8, HIGH);
-    delay(10);
-    digitalWrite(8, LOW);
+  // print out, if in DEBUG mode
+  if (DEBUG) {
+    Serial.print("SD Card Written. Sleeping for ");
+    Serial.print(interval_sec);
+    Serial.print(" seconds.");
+    Serial.println();
+    Serial.println("---------------------------------");
+    Serial.flush();
+  }
 
 
-
-// otherwise we've pulled up the stoppin 
-//error(5); // flash 5 times to indicate stop condition
-
-  //delay(1000);
-
+  // sleep in low power mode  
+  enterSleep(nextAlarm); //Sleep until next scheduled wakeup time
 }
 
+////////// Support functions
 
-String padInt(int x, int pad) {
-  String strInt = String(x);
-  
-  String str = "";
-  
-  if (strInt.length() >= pad) {
-    return strInt;
-  }
-  
-  for (int i=0; i < (pad-strInt.length()); i++) {
-    str += "0";
-  }
-  
-  str += strInt;
-  
-  return str;
+// Waking the MCU from sleep on Alarm Pin Change from RTC
+void rtc_interrupt() {
+  disableInterrupt(rtc_int); //first it Disables the interrupt so it doesn't get retriggered
 }
 
-String int2string(int x) {
-  // formats an integer as a string assuming x is in 1/100ths
-  String str = String(x);
-  int strLen = str.length();
-  if (strLen <= 2) {
-    str = "0." + str;
-  } else if (strLen <= 3) {
-    str = str.substring(0, 1) + "." + str.substring(1);
-  } else if (strLen <= 4) {
-    str = str.substring(0, 2) + "." + str.substring(2);
-  } else {
-    str = "-9999";
-  }
-  
-  return str;
+// Turns off SD Card Power, Sets Wake Alarm and Interrupt, and Powers down the MCU
+void enterSleep(DateTime& dt) { //argument is Wake Time as a DateTime object
+  delay(50); //Wait for file writing to finish. 10ms works somethings, 50 is more stable
+  digitalWrite(sd_pwr_enable, HIGH); //Turn off power to SD Card
+  delay(100); //wait for SD Card to power down was 100ms
+  rtc.clearAlarm(); //resets the alarm interrupt status on the rtc
+  enableInterrupt(rtc_int, rtc_interrupt, FALLING); //enables the interrupt on Pin5
+  rtc.enableAlarm(dt); //Sets the alarm on the rtc to the specified time (using the DateTime Object passed in)
+  delay(1); //wait for a moment for everything to complete
+  LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_OFF); //power down everything until the alarm fires
 }
 
+//returns battery voltage 
+float getBat_v(byte p, byte en) {
+  float v;
+  digitalWrite(en, LOW); //write mosfet low to enable read
+  delay(10); //wait for it to settle
+  v = analogRead(p); //read voltage
+  delay(10); //wait some more...for some reason
+  digitalWrite(en, HIGH); //disable read circuit
+  v = (v * (3.3 / 1024.0)) * 2.0; //calculate actual voltage
+  return v;
+}
+
+//Blinks a digital Pin
+///////////////////////////////////////////////////
+void blink(byte PIN, int DELAY_MS) {
+  digitalWrite(PIN, HIGH);
+  delay(DELAY_MS);
+  digitalWrite(PIN, LOW);
+  delay(DELAY_MS);
+}
+
+//Powers on SD Card, and records the give values into "data.csv"
+//Notes: The delay times are important. The SD Card initializations
+//     will fail if there isn't enough time between writing and sleeping
+void writeToSd(long t, float v, float temp) {
+  digitalWrite(led, HIGH); //LED ON, write cycle start
+  /**** POWER ON SD CARD ****/
+  digitalWrite(sd_pwr_enable, LOW); //Turn power to SD Card On
+  delay(100); //wait for power to stabilize (!!) 10ms works sometimes
+  /**** INIT SD CARD ****/
+  if (DEBUG) Serial.print("SD Card Initializing...");
+  if (!sd.begin(chipSelect)) {  //init. card
+    if (DEBUG) Serial.println("Failed!");
+    while (1); //if card fails to init. the led will stay lit.
+  }
+  if (DEBUG) Serial.println("Success");
+  /**** OPEN FILE ****/
+  if (DEBUG) Serial.print("File Opening...");
+  if (!myFile.open("data.csv", O_RDWR | O_CREAT | O_AT_END)) {  //open file
+    if (DEBUG) Serial.println("Failed!");
+    while (1);
+  }
+  if (DEBUG) Serial.println("Success");
+  /**** WRITE TO FILE ****/
+  myFile.print(t);
+  myFile.print(",");
+  myFile.print(temp);
+  myFile.print(",");
+  myFile.print(v);
+  myFile.println();
+  myFile.close();
+  digitalWrite(led, LOW); //LED will stay on if something broke
+}
