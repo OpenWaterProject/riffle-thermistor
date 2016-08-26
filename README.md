@@ -54,6 +54,18 @@ Below is a picture of a simple voltage divider setup on the Riffle Protoboard wh
 
 The Arduino code [riffle_thermistor.ino] in this repository will measure temperature using analog pin A0 on the Riffle, and record it to a microSD card along with a timestamp. 
 
+Now that you've set up the circuit, here's how to get a Riffle logging 1-wire temperature values to a microSD card:
+
+1. Download this entire repository using the button on this page above (or [this link](https://github.com/dwblair/riffle-one-wire/archive/master.zip) should work).  
+
+2. Copy all of the libraries labeled in the "libraries" folder to the "libraries" folder in your Arduino IDE "sketchbook" folder.
+
+3. Then, upload the "riffle_thermistor.ino" code onto the Riffle, choosing "Arduino UNO" as the board type. 
+
+This code will start measuring temperature using a 1-wire sensor as setup above.  It assumes that the thermistor is connected to 'A0', as in the schematic above.
+ 
+The data is output in "TSV" format, with tabs separating columns of data (timestamp in the first column, thermistor in the third column).
+
 The data is output in "TSV" format, with tabs separating columns of data (timestamp in the first column, RTC temperature in the second column, thermistor temperature in the third column).
 
 
