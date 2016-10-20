@@ -4,8 +4,6 @@
 #include "EnableInterrupt.h"  //  https://github.com/GreyGnome/EnableInterrupt
 #include "DS3231.h"   //  https://github.com/kinasmith/DS3231
 #include "LowPower.h"   //  https://github.com/rocketscream/Low-Power
-#include <OneWire.h>
-#include <DallasTemperature.h>
 
 DS3231 rtc; //initialize the Real Time Clock
 
@@ -80,8 +78,6 @@ void setup() {
   digitalWrite(hdr_pwr_enable, HIGH); //Turn off external sensors
 
 
-  // Start up the library
-  sensors.begin();
 }
 
 void loop() {
@@ -230,7 +226,7 @@ void blink(byte PIN, int DELAY_MS) {
   delay(DELAY_MS);
 }
 
-//Powers on SD Card, and records the give values into "data.csv"
+//Powers on SD Card, and records the give values into "thermsistordata.csv"
 //Notes: The delay times are important. The SD Card initializations
 //     will fail if there isn't enough time between writing and sleeping
 void writeToSd(long t, float v, float temp) {
@@ -247,7 +243,7 @@ void writeToSd(long t, float v, float temp) {
   if (DEBUG) Serial.println("Success");
   /**** OPEN FILE ****/
   if (DEBUG) Serial.print("File Opening...");
-  if (!myFile.open("data.csv", O_RDWR | O_CREAT | O_AT_END)) {  //open file
+  if (!myFile.open("thermsistordata.csv", O_RDWR | O_CREAT | O_AT_END)) {  //open file
     if (DEBUG) Serial.println("Failed!");
     while (1);
   }
