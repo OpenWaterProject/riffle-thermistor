@@ -226,7 +226,7 @@ void blink(byte PIN, int DELAY_MS) {
   delay(DELAY_MS);
 }
 
-//Powers on SD Card, and records the give values into "thermsistordata.csv"
+//Powers on SD Card, and records the give values into "thermistordata.csv"
 //Notes: The delay times are important. The SD Card initializations
 //     will fail if there isn't enough time between writing and sleeping
 void writeToSd(long t, float v, float temp) {
@@ -243,7 +243,7 @@ void writeToSd(long t, float v, float temp) {
   if (DEBUG) Serial.println("Success");
   /**** OPEN FILE ****/
   if (DEBUG) Serial.print("File Opening...");
-  if (!myFile.open("thermsistordata.csv", O_RDWR | O_CREAT | O_AT_END)) {  //open file
+  if (!myFile.open("thermistordata.csv", O_RDWR | O_CREAT | O_AT_END)) {  //open file
     if (DEBUG) Serial.println("Failed!");
     while (1);
   }
